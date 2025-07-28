@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AssessmentLayout } from "@/components/assessment/AssessmentLayout";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import { QuestionCard } from "@/components/assessment/QuestionCard";
-import { ScoreCard } from "@/components/assessment/ScoreCard";
-import { Button } from "@/components/ui/button";
 import { assessmentSections } from "@/data/assessmentData";
 import { AssessmentResponse, AssessmentScores } from "@/types/assessment";
-import { Brain, Code, Target, Award } from "lucide-react";
+import { Brain, Code, Target, Award, BookOpen, TrendingUp, ArrowRight, CheckCircle } from "lucide-react";
+import { RadioGroup } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 export default function Assessment() {
   const navigate = useNavigate();
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(1);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState<AssessmentResponse[]>([]);
   const [isComplete, setIsComplete] = useState(false);
@@ -20,6 +23,18 @@ export default function Assessment() {
   const totalQuestions = assessmentSections.reduce((sum, section) => sum + section.questions.length, 0);
   const answeredQuestions = responses.length;
   const progress = totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0;
+
+  const sections = [
+    { id: 'intro', title: 'Introduction', icon: BookOpen, color: 'bg-blue-500' },
+    { id: 'psychometric', title: 'Psychological Fit', icon: Brain, color: 'bg-purple-500' },
+    { id: 'technical', title: 'Technical Aptitude', icon: Code, color: 'bg-green-500' },
+    { id: 'wiscar', title: 'WISCAR Analysis', icon: Target, color: 'bg-orange-500' },
+    { id: 'results', title: 'Your Results', icon: TrendingUp, color: 'bg-red-500' }
+  ];
+
+  const getCurrentSectionIndex = () => {
+    return currentSectionIndex;
+  };
 
   const handleOptionSelect = (optionId: string, value: number) => {
     if (!currentQuestion) return;
@@ -120,136 +135,277 @@ export default function Assessment() {
     };
   };
 
-  const handleViewResults = () => {
-    const scores = calculateScores();
-    navigate('/results', { state: { scores, responses } });
-  };
+
 
   if (!currentSection) {
     return <div>Loading...</div>;
   }
 
   if (isComplete) {
+    // Navigate directly to results page instead of showing completion cards
     const scores = calculateScores();
-    
-    return (
-      <AssessmentLayout
-        title="Assessment Complete!"
-        subtitle="Here's a preview of your scores"
-        progress={100}
-        onNext={handleViewResults}
-        nextLabel="View Detailed Results"
-        canGoPrevious={false}
-      >
-        <div className="grid gap-6 md:grid-cols-2">
-          <ScoreCard
-            title="Psychological Fit"
-            score={Math.round(scores.psychometric)}
-            icon={Brain}
-            description="Personality and motivation alignment"
-          />
-          <ScoreCard
-            title="Technical Readiness"
-            score={Math.round(scores.technical)}
-            icon={Code}
-            description="Programming and logical aptitude"
-          />
-          <ScoreCard
-            title="WISCAR Assessment"
-            score={Math.round(Object.values(scores.wiscar).reduce((a, b) => a + b, 0) / 6)}
-            icon={Target}
-            description="Multi-dimensional readiness"
-          />
-          <ScoreCard
-            title="Overall Score"
-            score={Math.round(scores.overall)}
-            icon={Award}
-            description="Combined readiness index"
-          />
-        </div>
-      </AssessmentLayout>
-    );
+    navigate('/results', { state: { scores, responses } });
+    return null; // Return null while navigating
   }
 
   if (currentSection.questions.length === 0) {
     // Introduction section
     return (
-      <AssessmentLayout
-        title={currentSection.title}
-        subtitle={currentSection.description}
-        progress={progress}
-        onNext={handleNext}
-        canGoPrevious={canGoPrevious()}
-        onPrevious={handlePrevious}
-      >
-        <div className="max-w-3xl mx-auto space-y-8">
-          <div className="assessment-card">
-            <h2 className="text-2xl font-bold text-card-foreground mb-4">
-              🚀 Should I Learn Flutter?
-            </h2>
-            <div className="space-y-4 text-card-foreground">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold mb-2">🔍 Purpose</h3>
-                <p>To assess whether Flutter, a cross-platform UI toolkit, aligns with your interests, mindset, current skills, and career goals.</p>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {currentSection.title}
+                </h1>
+                <p className="text-gray-600 text-sm">
+                  {currentSection.description}
+                </p>
               </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-2">💡 What is Flutter?</h3>
-                <p>Flutter is an open-source UI toolkit from Google for building natively compiled applications for mobile, web, and desktop from a single codebase using the Dart language.</p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-2">🧑‍💻 Careers Associated with Flutter:</h3>
-                <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li>Flutter Developer</li>
-                  <li>Mobile App Developer</li>
-                  <li>Cross-platform Engineer</li>
-                  <li>Frontend Developer</li>
-                  <li>UI/UX Developer</li>
-                  <li>App Architect</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-2">✅ Who Thrives with Flutter?</h3>
-                <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li>Problem-solvers with design & logic balance</li>
-                  <li>Creatives who enjoy building interfaces</li>
-                  <li>Developers who want efficient, scalable codebases</li>
-                  <li>People who value fast results and tangible output</li>
-                </ul>
-              </div>
+              <Badge variant="outline" className="text-sm">
+                {Math.round(progress)}% Complete
+              </Badge>
+            </div>
+            
+            {/* Progress Bar */}
+            <div className="mt-4">
+              <Progress value={progress} className="h-2" />
             </div>
           </div>
         </div>
-      </AssessmentLayout>
+
+        {/* Main Content */}
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold text-gray-900">
+                  🚀 Should I Learn Flutter?
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-gray-700">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">🔍 Purpose</h3>
+                  <p>To assess whether Flutter, a cross-platform UI toolkit, aligns with your interests, mindset, current skills, and career goals.</p>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">💡 What is Flutter?</h3>
+                  <p>Flutter is an open-source UI toolkit from Google for building natively compiled applications for mobile, web, and desktop from a single codebase using the Dart language.</p>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">🧑‍💻 Careers Associated with Flutter:</h3>
+                  <ul className="list-disc list-inside space-y-1 ml-4">
+                    <li>Flutter Developer</li>
+                    <li>Mobile App Developer</li>
+                    <li>Cross-platform Engineer</li>
+                    <li>Frontend Developer</li>
+                    <li>UI/UX Developer</li>
+                    <li>App Architect</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">✅ Who Thrives with Flutter?</h3>
+                  <ul className="list-disc list-inside space-y-1 ml-4">
+                    <li>Problem-solvers with design & logic balance</li>
+                    <li>Creatives who enjoy building interfaces</li>
+                    <li>Developers who want efficient, scalable codebases</li>
+                    <li>People who value fast results and tangible output</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <div className="mt-8 text-center">
+              <Button 
+                onClick={handleNext} 
+                size="lg" 
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
+              >
+                Start Assessment
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <AssessmentLayout
-      title={currentSection.title}
-      subtitle={currentSection.description}
-      progress={progress}
-      onNext={handleNext}
-      onPrevious={handlePrevious}
-      canGoNext={canGoNext()}
-      canGoPrevious={canGoPrevious()}
-    >
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-6">
-          <div className="text-center text-sm text-muted-foreground">
-            Question {answeredQuestions + 1} of {totalQuestions}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {currentSection.title}
+              </h1>
+              <p className="text-gray-600 text-sm">
+                {currentSection.description}
+              </p>
+            </div>
+            <Badge variant="outline" className="text-sm">
+              {Math.round(progress)}% Complete
+            </Badge>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="mt-4">
+            <Progress value={progress} className="h-2" />
+          </div>
+          
+          {/* Section Navigation */}
+          <div className="flex mt-4 space-x-4 overflow-x-auto">
+            {sections.map((section, index) => {
+              const Icon = section.icon;
+              const isActive = index === currentSectionIndex;
+              const isCompleted = currentSectionIndex > index;
+              
+              return (
+                <div
+                  key={section.id}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg min-w-fit ${
+                    isActive
+                      ? 'bg-blue-100 text-blue-700 border-2 border-blue-300'
+                      : isCompleted
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  {isCompleted ? (
+                    <CheckCircle className="w-4 h-4" />
+                  ) : (
+                    <Icon className="w-4 h-4" />
+                  )}
+                  <span className="text-sm font-medium">{section.title}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
-        
-        <QuestionCard
-          question={currentQuestion.question}
-          options={currentQuestion.options}
-          selectedOption={getCurrentResponse()?.optionId}
-          onOptionSelect={handleOptionSelect}
-        />
       </div>
-    </AssessmentLayout>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto">
+          {(() => {
+            let cardBorder = "border-blue-200";
+            let bgColor = "bg-blue-50";
+            let textColor = "text-blue-700";
+            let icon = <Brain className="w-6 h-6 text-blue-600" />;
+            let sectionLabel = "Assessment";
+            if (currentSectionIndex === 1) {
+              cardBorder = "border-purple-200";
+              bgColor = "bg-purple-50";
+              textColor = "text-purple-700";
+              icon = <Brain className="w-6 h-6 text-purple-600" />;
+              sectionLabel = "Psychological Fit Assessment";
+            } else if (currentSectionIndex === 2) {
+              cardBorder = "border-green-200";
+              bgColor = "bg-green-50";
+              textColor = "text-green-700";
+              icon = <Code className="w-6 h-6 text-green-600" />;
+              sectionLabel = "Technical Aptitude Assessment";
+            } else if (currentSectionIndex === 3) {
+              cardBorder = "border-orange-200";
+              bgColor = "bg-orange-50";
+              textColor = "text-orange-700";
+              icon = <Target className="w-6 h-6 text-orange-600" />;
+              sectionLabel = "WISCAR Analysis";
+            }
+            return (
+              <Card className={`border-2 ${cardBorder}`}>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    {icon}
+                    <span>{sectionLabel}</span>
+                  </CardTitle>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>Question {answeredQuestions + 1} of {totalQuestions}</span>
+                      <span>{Math.round(progress)}% Complete</span>
+                    </div>
+                    <Progress value={progress} className="h-2" />
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className={`${bgColor} p-4 rounded-lg`}>
+                    <div className={`text-sm font-medium mb-2 ${textColor}`}>
+                      {currentQuestion.category || currentSection.title}
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      {currentQuestion.question}
+                    </h3>
+                    <RadioGroup
+                      value={getCurrentResponse()?.optionId || ''}
+                      onValueChange={optionId => {
+                        const option = currentQuestion.options.find(o => o.id === optionId);
+                        if (option) handleOptionSelect(option.id, option.value);
+                      }}
+                      className="space-y-3"
+                    >
+                      {currentQuestion.options.map((option, index) => (
+                        <div key={option.id || index} className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            id={`option-${option.id || index}`}
+                            name="assessment-option"
+                            value={option.id}
+                            checked={getCurrentResponse()?.optionId === option.id}
+                            onChange={() => handleOptionSelect(option.id, option.value)}
+                            className="accent-current h-4 w-4"
+                          />
+                          <Label
+                            htmlFor={`option-${option.id || index}`}
+                            className="text-sm cursor-pointer flex-1 py-2 px-3 rounded hover:bg-white/50 transition-colors"
+                          >
+                            {option.text}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-gray-500">
+                      Evaluating: {currentSection.title}
+                    </div>
+                    <div className="flex gap-2">
+                      {currentSectionIndex === 0 && (
+                        <Button
+                          variant="outline"
+                          onClick={handlePrevious}
+                          disabled={!canGoPrevious()}
+                          className="flex items-center gap-2"
+                        >
+                          Previous
+                        </Button>
+                      )}
+                      <Button
+                        onClick={handleNext}
+                        disabled={!canGoNext()}
+                        className={`${
+                          currentSectionIndex === 1 
+                            ? 'bg-purple-600 hover:bg-purple-700 text-white' 
+                            : `${bgColor.replace('50','600')} hover:${bgColor.replace('50','700')} text-white`
+                        } flex items-center gap-2 px-6 py-2`}
+                      >
+                        {currentSectionIndex === 1 ? 'Next' : 'Next'}
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })()}
+        </div>
+      </div>
+    </div>
   );
 }

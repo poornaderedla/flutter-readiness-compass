@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface QuestionOption {
@@ -24,30 +24,33 @@ export function QuestionCard({
   className 
 }: QuestionCardProps) {
   return (
-    <Card className={cn("assessment-card", className)}>
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-card-foreground mb-4">
+    <Card className={cn("", className)}>
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold text-gray-900">
           {question}
-        </h3>
-      </div>
-      
-      <div className="space-y-3">
-        {options.map((option) => (
-          <Button
-            key={option.id}
-            variant={selectedOption === option.id ? "primary" : "outline"}
-            className={cn(
-              "w-full justify-start text-left p-4 h-auto",
-              selectedOption === option.id && "ring-2 ring-primary ring-offset-2"
-            )}
-            onClick={() => onOptionSelect(option.id, option.value)}
-          >
-            <div className="text-sm leading-relaxed">
-              {option.text}
-            </div>
-          </Button>
-        ))}
-      </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {options.map((option) => (
+            <Button
+              key={option.id}
+              variant={selectedOption === option.id ? "default" : "outline"}
+              className={cn(
+                "w-full justify-start text-left p-4 h-auto",
+                selectedOption === option.id 
+                  ? "bg-blue-600 hover:bg-blue-700 text-white ring-2 ring-blue-300 ring-offset-2" 
+                  : "hover:bg-gray-50"
+              )}
+              onClick={() => onOptionSelect(option.id, option.value)}
+            >
+              <div className="text-sm leading-relaxed">
+                {option.text}
+              </div>
+            </Button>
+          ))}
+        </div>
+      </CardContent>
     </Card>
   );
 }

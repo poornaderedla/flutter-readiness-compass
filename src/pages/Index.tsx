@@ -1,236 +1,278 @@
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { BookOpen, Brain, Code, Target, Users, TrendingUp, ArrowRight, CheckCircle } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Smartphone, 
-  Code, 
-  Target, 
-  Users, 
-  Clock, 
-  Award,
-  ArrowRight,
-  CheckCircle,
-  Brain
-} from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [currentSection, setCurrentSection] = useState('intro');
 
-  const features = [
-    {
-      icon: Brain,
-      title: "Psychometric Analysis",
-      description: "Evaluate personality fit and learning motivation using validated psychological models"
-    },
-    {
-      icon: Code,
-      title: "Technical Assessment",
-      description: "Test logical reasoning, programming fundamentals, and Flutter-specific concepts"
-    },
-    {
-      icon: Target,
-      title: "WISCAR Framework",
-      description: "Multi-dimensional evaluation across Will, Interest, Skill, Cognitive ability, Ability to learn, and Real-world fit"
-    },
-    {
-      icon: Award,
-      title: "Career Guidance",
-      description: "Personalized recommendations for Flutter-related career paths and learning roadmaps"
-    }
+  const sections = [
+    { id: 'intro', title: 'Introduction', icon: BookOpen, color: 'bg-blue-500' },
+    { id: 'psychometric', title: 'Psychological Fit', icon: Brain, color: 'bg-purple-500' },
+    { id: 'technical', title: 'Technical Aptitude', icon: Code, color: 'bg-green-500' },
+    { id: 'wiscar', title: 'WISCAR Analysis', icon: Target, color: 'bg-orange-500' },
+    { id: 'results', title: 'Your Results', icon: TrendingUp, color: 'bg-red-500' }
   ];
 
-  const stats = [
-    { icon: Clock, label: "Assessment Time", value: "25-30 mins" },
-    { icon: Target, label: "Accuracy Rate", value: "90%+" },
-    { icon: Users, label: "Career Paths", value: "6+ roles" },
-    { icon: CheckCircle, label: "Success Rate", value: "85%" }
+  const getCurrentSectionIndex = () => {
+    return sections.findIndex(section => section.id === currentSection);
+  };
+
+  const progress = ((getCurrentSectionIndex() + 1) / sections.length) * 100;
+
+  const goToNextSection = () => {
+    const currentIndex = getCurrentSectionIndex();
+    if (currentIndex < sections.length - 1) {
+      setCurrentSection(sections[currentIndex + 1].id);
+    }
+  };
+
+  const startAssessment = () => {
+    navigate('/assessment');
+  };
+
+  const renderCurrentSection = () => {
+    switch (currentSection) {
+      case 'intro':
+        return <AssessmentIntro onNext={startAssessment} />;
+      default:
+        return <AssessmentIntro onNext={startAssessment} />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Should I Learn Flutter?
+              </h1>
+              <p className="text-gray-600 text-sm">
+                Comprehensive Career Assessment & Guidance
+              </p>
+            </div>
+            <Badge variant="outline" className="text-sm">
+              {Math.round(progress)}% Complete
+            </Badge>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="mt-4">
+            <Progress value={progress} className="h-2" />
+          </div>
+          
+          {/* Section Navigation */}
+          <div className="flex mt-4 space-x-4 overflow-x-auto">
+            {sections.map((section, index) => {
+              const Icon = section.icon;
+              const isActive = section.id === currentSection;
+              const isCompleted = getCurrentSectionIndex() > index;
+              
+              return (
+                <div
+                  key={section.id}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg min-w-fit ${
+                    isActive
+                      ? 'bg-blue-100 text-blue-700 border-2 border-blue-300'
+                      : isCompleted
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  {isCompleted ? (
+                    <CheckCircle className="w-4 h-4" />
+                  ) : (
+                    <Icon className="w-4 h-4" />
+                  )}
+                  <span className="text-sm font-medium">{section.title}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        {renderCurrentSection()}
+      </div>
+    </div>
+  );
+};
+
+// AssessmentIntro component
+const AssessmentIntro = ({ onNext }: { onNext: () => void }) => {
+  const careers = [
+    { title: 'Flutter Developer', description: 'Build cross-platform applications' },
+    { title: 'Mobile App Developer', description: 'Create native mobile experiences' },
+    { title: 'Cross-platform Engineer', description: 'Develop for multiple platforms' },
+    { title: 'Frontend Developer', description: 'Build web and mobile interfaces' },
+    { title: 'UI/UX Developer', description: 'Design and implement user interfaces' }
+  ];
+
+  const traits = [
+    'Strong analytical thinking',
+    'Creative problem-solving',
+    'Interest in mobile development',
+    'Comfort with programming concepts',
+    'Attention to design details',
+    'Adaptability to new technologies'
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="max-w-4xl mx-auto space-y-8">
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 gradient-hero opacity-10" />
-        <div className="container mx-auto px-4 relative">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            <div className="space-y-4">
-              <Badge className="bg-primary/10 text-primary border-primary/20">
-                🚀 Flutter Readiness Assessment
-              </Badge>
-              <h1 className="text-5xl md:text-6xl font-bold text-card-foreground text-shadow">
-                Should I Learn 
-                <span className="gradient-primary bg-clip-text text-transparent"> Flutter</span>?
-              </h1>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Discover if Flutter development aligns with your skills, interests, and career goals through our comprehensive assessment framework.
-              </p>
+      <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-3xl font-bold text-gray-900 mb-2">
+            Discover Your Flutter Career Potential
+          </CardTitle>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Take our comprehensive assessment to evaluate your psychological fit, technical readiness, 
+            and career alignment for a future in Flutter development.
+          </p>
+        </CardHeader>
+        <CardContent className="text-center">
+          <div className="flex justify-center items-center space-x-6 mb-6">
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <BookOpen className="w-4 h-4" />
+              <span>25-30 minutes</span>
             </div>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                variant="hero" 
-                onClick={() => navigate('/assessment')}
-                className="animate-pulse-glow"
-              >
-                Start Assessment
-                <ArrowRight className="w-5 h-5" />
-              </Button>
-              <Button variant="outline" className="text-lg py-4 px-8">
-                Learn More
-              </Button>
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <Target className="w-4 h-4" />
+              <span>Personalized Results</span>
             </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12">
-              {stats.map((stat) => (
-                <div key={stat.label} className="text-center space-y-2">
-                  <stat.icon className="w-8 h-8 mx-auto text-primary" />
-                  <div className="text-2xl font-bold text-card-foreground">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </div>
-              ))}
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <TrendingUp className="w-4 h-4" />
+              <span>Career Guidance</span>
             </div>
           </div>
-        </div>
-      </section>
+          <Button 
+            onClick={onNext} 
+            size="lg" 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
+          >
+            Start Assessment
+            <ArrowRight className="ml-2 w-5 h-5" />
+          </Button>
+        </CardContent>
+      </Card>
 
-      {/* What is Flutter Section */}
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <Card className="assessment-card">
-              <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div className="space-y-6">
-                  <h2 className="text-3xl font-bold text-card-foreground">
-                    💡 What is Flutter?
-                  </h2>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Flutter is Google's open-source UI toolkit for building natively compiled applications 
-                    for mobile, web, and desktop from a single codebase using the Dart programming language.
-                  </p>
-                  
-                  <div className="space-y-3">
-                    <h3 className="font-semibold text-card-foreground">Key Benefits:</h3>
-                    <ul className="space-y-2">
-                      {[
-                        "Single codebase for multiple platforms",
-                        "Fast development and hot reload",
-                        "Native performance",
-                        "Rich UI components and animations"
-                      ].map((benefit) => (
-                        <li key={benefit} className="flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4 text-success" />
-                          <span className="text-muted-foreground">{benefit}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-                
-                <div className="relative">
-                  <div className="gradient-primary rounded-lg p-8 text-center">
-                    <Smartphone className="w-24 h-24 mx-auto text-primary-foreground mb-4" />
-                    <h3 className="text-xl font-bold text-primary-foreground mb-2">
-                      Cross-Platform Development
-                    </h3>
-                    <p className="text-primary-foreground/90">
-                      Build for iOS, Android, Web, and Desktop with one codebase
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Assessment Features */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-card-foreground mb-4">
-                Comprehensive Assessment Framework
-              </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Our multi-dimensional evaluation covers psychological fit, technical aptitude, 
-                and career alignment to give you personalized guidance.
-              </p>
+      {/* What is Flutter */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Code className="w-6 h-6 text-blue-600" />
+            <span>What is Flutter?</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-700 text-lg leading-relaxed mb-4">
+            Flutter is Google's <strong>open-source UI toolkit</strong> for building natively compiled applications 
+            for mobile, web, and desktop from a single codebase using the <strong>Dart programming language</strong>. 
+            It enables developers to create beautiful, fast, and consistent applications across multiple platforms.
+          </p>
+          <div className="grid md:grid-cols-3 gap-4 mt-6">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-blue-900 mb-2">Cross-Platform</h4>
+              <p className="text-sm text-blue-700">Single codebase for multiple platforms</p>
             </div>
-
-            <div className="grid md:grid-cols-2 gap-8">
-              {features.map((feature, index) => (
-                <Card key={feature.title} className="assessment-card group">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-lg gradient-primary">
-                      <feature.icon className="w-6 h-6 text-primary-foreground" />
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-semibold text-card-foreground group-hover:text-primary transition-colors">
-                        {feature.title}
-                      </h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        {feature.description}
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-green-900 mb-2">Fast Development</h4>
+              <p className="text-sm text-green-700">Hot reload and rapid iteration</p>
+            </div>
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-purple-900 mb-2">Native Performance</h4>
+              <p className="text-sm text-purple-700">Compiled to native code for speed</p>
             </div>
           </div>
-        </div>
-      </section>
+        </CardContent>
+      </Card>
 
       {/* Career Paths */}
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-card-foreground mb-8">
-              🧑‍💻 Flutter Career Opportunities
-            </h2>
-            
-            <div className="grid md:grid-cols-3 gap-6">
-              {[
-                "Flutter Developer",
-                "Mobile App Developer", 
-                "Cross-platform Engineer",
-                "Frontend Developer",
-                "UI/UX Developer",
-                "App Architect"
-              ].map((role) => (
-                <Card key={role} className="assessment-card text-center group">
-                  <h3 className="font-semibold text-card-foreground group-hover:text-primary transition-colors">
-                    {role}
-                  </h3>
-                </Card>
-              ))}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Users className="w-6 h-6 text-green-600" />
+            <span>Career Opportunities</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {careers.map((career, index) => (
+              <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <h4 className="font-semibold text-gray-900 mb-2">{career.title}</h4>
+                <p className="text-sm text-gray-600">{career.description}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Ideal Traits */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <CheckCircle className="w-6 h-6 text-orange-600" />
+            <span>Ideal Traits & Skills</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-3">
+            {traits.map((trait, index) => (
+              <div key={index} className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <span className="text-gray-700">{trait}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Assessment Overview */}
+      <Card className="border-2 border-gray-200">
+        <CardHeader>
+          <CardTitle>What You'll Discover</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-3">Assessment Modules:</h4>
+              <ul className="space-y-2">
+                <li className="flex items-center space-x-2">
+                  <Badge variant="outline" className="bg-purple-50 text-purple-700">1</Badge>
+                  <span className="text-sm">Psychological Fit Evaluation</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <Badge variant="outline" className="bg-green-50 text-green-700">2</Badge>
+                  <span className="text-sm">Technical Aptitude Testing</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <Badge variant="outline" className="bg-orange-50 text-orange-700">3</Badge>
+                  <span className="text-sm">WISCAR Framework Analysis</span>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-3">Your Results Include:</h4>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li>• Personalized fit score (0-100)</li>
+                <li>• Detailed trait analysis</li>
+                <li>• Technical readiness assessment</li>
+                <li>• Career pathway recommendations</li>
+                <li>• Next steps and learning resources</li>
+              </ul>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            <h2 className="text-4xl font-bold text-card-foreground">
-              Ready to Discover Your Flutter Potential?
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Take our comprehensive assessment and get personalized guidance for your development journey.
-            </p>
-            
-            <Button 
-              variant="hero" 
-              onClick={() => navigate('/assessment')}
-              className="animate-pulse-glow"
-            >
-              Start Your Assessment
-              <ArrowRight className="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
-      </section>
+        </CardContent>
+      </Card>
     </div>
   );
 };

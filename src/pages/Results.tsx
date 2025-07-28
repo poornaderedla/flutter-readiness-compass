@@ -1,299 +1,488 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { ScoreCard } from "@/components/assessment/ScoreCard";
-import { Badge } from "@/components/ui/badge";
-import { AssessmentScores } from "@/types/assessment";
-import { careerPaths } from "@/data/assessmentData";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { 
+  TrendingUp, 
   Brain, 
   Code, 
   Target, 
-  Award, 
+  ChevronRight, 
   CheckCircle, 
-  AlertCircle, 
+  AlertTriangle, 
   XCircle,
-  TrendingUp,
+  Users,
   BookOpen,
-  MapPin
-} from "lucide-react";
+  ExternalLink,
+  Star,
+  Award
+} from 'lucide-react';
+import { AssessmentScores } from "@/types/assessment";
 
 export default function Results() {
   const location = useLocation();
   const navigate = useNavigate();
   const { scores } = location.state as { scores: AssessmentScores };
 
-  const getRecommendation = (overallScore: number) => {
-    if (overallScore >= 75) return { result: 'YES', confidence: 85 + (overallScore - 75) };
-    if (overallScore >= 50) return { result: 'MAYBE', confidence: 60 + (overallScore - 50) };
-    return { result: 'NO', confidence: 40 + overallScore * 0.5 };
-  };
-
-  const recommendation = getRecommendation(scores.overall);
-
-  const getRecommendationColor = (result: string) => {
-    switch (result) {
-      case 'YES': return 'text-success';
-      case 'MAYBE': return 'text-warning';
-      case 'NO': return 'text-danger';
-      default: return 'text-muted-foreground';
+  // Calculate overall recommendation
+  const calculateOverallRecommendation = () => {
+    const psychScore = scores.psychometric || 0;
+    const techScore = scores.technical || 0;
+    const wiscarScore = Math.round(Object.values(scores.wiscar).reduce((a, b) => a + b, 0) / 6);
+    
+    const overallScore = Math.round((psychScore + techScore + wiscarScore) / 3);
+    
+    if (overallScore >= 75) {
+      return {
+        recommendation: 'YES',
+        title: 'Flutter is an Excellent Fit for You!',
+        color: 'green',
+        icon: CheckCircle,
+        description: 'You show strong alignment across psychological fit, technical readiness, and holistic assessment dimensions.'
+      };
+    } else if (overallScore >= 60) {
+      return {
+        recommendation: 'MAYBE',
+        title: 'Flutter Could Be Right with Preparation',
+        color: 'orange',
+        icon: AlertTriangle,
+        description: 'You have potential but may need to strengthen certain areas before diving deep into Flutter.'
+      };
+    } else {
+      return {
+        recommendation: 'NO',
+        title: 'Consider Alternative Paths',
+        color: 'red',
+        icon: XCircle,
+        description: 'Based on your current profile, other technology paths might be a better fit for your interests and skills.'
+      };
     }
   };
 
-  const getRecommendationIcon = (result: string) => {
-    switch (result) {
-      case 'YES': return CheckCircle;
-      case 'MAYBE': return AlertCircle;
-      case 'NO': return XCircle;
-      default: return AlertCircle;
-    }
-  };
+  const recommendation = calculateOverallRecommendation();
+  const RecommendationIcon = recommendation.icon;
 
-  const skillAssessment = [
-    { skill: "Dart Programming", current: Math.round(scores.technical * 0.7), required: 70, status: "NEEDS_WORK" },
-    { skill: "UI/UX Understanding", current: Math.round(scores.psychometric * 0.8), required: 60, status: "GOOD" },
-    { skill: "Logic/Algorithms", current: Math.round(scores.technical * 0.9), required: 70, status: "GOOD" },
-    { skill: "State Management", current: Math.round(scores.wiscar.skill * 0.6), required: 60, status: "NEEDS_WORK" },
-    { skill: "Problem Solving", current: Math.round(scores.wiscar.cognitive), required: 65, status: "GOOD" }
+  const careerPaths = [
+    {
+      title: 'Flutter Developer',
+      description: 'Build cross-platform mobile applications',
+      skillMatch: Math.max(scores.technical || 0, 70),
+      requirements: ['Dart Programming', 'Flutter Framework', 'Mobile Development']
+    },
+    {
+      title: 'Mobile App Developer',
+      description: 'Create native and cross-platform apps',
+      skillMatch: Math.max(scores.psychometric || 0, 75),
+      requirements: ['UI/UX Design', 'App Development', 'Platform Knowledge']
+    },
+    {
+      title: 'Frontend Developer',
+      description: 'Build web and mobile interfaces',
+      skillMatch: Math.max(scores.wiscar.skill || 0, 70),
+      requirements: ['JavaScript', 'React/Vue', 'CSS/HTML']
+    },
+    {
+      title: 'UI/UX Developer',
+      description: 'Design and implement user interfaces',
+      skillMatch: Math.max(scores.psychometric || 0, 65),
+      requirements: ['Design Principles', 'User Research', 'Prototyping']
+    }
   ];
 
-  const getSkillStatus = (current: number, required: number) => {
-    if (current >= required) return "GOOD";
-    if (current >= required * 0.7) return "NEEDS_WORK";
-    return "CRITICAL";
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "GOOD": return "text-success";
-      case "NEEDS_WORK": return "text-warning";
-      case "CRITICAL": return "text-danger";
-      default: return "text-muted-foreground";
+  const learningPath = [
+    {
+      stage: 'Foundation',
+      modules: ['Dart Basics', 'Flutter Widgets', 'Basic Layouts'],
+      duration: '4-6 weeks',
+      completed: false
+    },
+    {
+      stage: 'Intermediate',
+      modules: ['Navigation', 'State Management', 'API Integration'],
+      duration: '6-8 weeks',
+      completed: false
+    },
+    {
+      stage: 'Advanced',
+      modules: ['Animations', 'Performance', 'App Deployment'],
+      duration: '8-10 weeks',
+      completed: false
+    },
+    {
+      stage: 'Certification',
+      modules: ['Flutter Certification', 'Practice Projects', 'Portfolio Building'],
+      duration: '4-6 weeks',
+      completed: false
     }
-  };
+  ];
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "GOOD": return "✅";
-      case "NEEDS_WORK": return "🚧";
-      case "CRITICAL": return "❌";
-      default: return "❓";
-    }
-  };
-
-  const Icon = getRecommendationIcon(recommendation.result);
+  const alternatives = [
+    { title: 'React Native', reason: 'Similar cross-platform approach, JavaScript-based' },
+    { title: 'Native iOS/Android', reason: 'Platform-specific development with better performance' },
+    { title: 'Web Development', reason: 'Browser-based applications with broader reach' },
+    { title: 'Backend Development', reason: 'Server-side programming and APIs' }
+  ];
 
   return (
-    <div className="min-h-screen bg-background py-12">
-      <div className="container mx-auto px-4">
-        <div className="max-w-6xl mx-auto space-y-8">
-          
-          {/* Header */}
-          <div className="text-center space-y-4">
-            <h1 className="text-4xl font-bold text-card-foreground">
-              Your Flutter Readiness Assessment
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Here's your personalized evaluation and career guidance
-            </p>
-          </div>
-
-          {/* Main Recommendation */}
-          <Card className="assessment-card text-center">
-            <div className="space-y-6">
-              <div className="flex items-center justify-center">
-                <Icon className={`w-16 h-16 ${getRecommendationColor(recommendation.result)}`} />
-              </div>
-              
-              <div>
-                <h2 className="text-3xl font-bold mb-2">
-                  Should You Learn Flutter?{" "}
-                  <span className={getRecommendationColor(recommendation.result)}>
-                    {recommendation.result === 'YES' ? '✅ YES' : 
-                     recommendation.result === 'MAYBE' ? '🤔 MAYBE' : '❌ NO'}
-                  </span>
-                </h2>
-                <p className="text-xl text-muted-foreground">
-                  Confidence Score: <span className="font-bold">{Math.round(recommendation.confidence)}%</span>
-                </p>
-              </div>
-
-              <div className="max-w-2xl mx-auto">
-                {recommendation.result === 'YES' && (
-                  <p className="text-success">
-                    Excellent! You show strong alignment with Flutter development. Your combination of 
-                    motivation, aptitude, and interest suggests you'll thrive in the Flutter ecosystem.
-                  </p>
-                )}
-                {recommendation.result === 'MAYBE' && (
-                  <p className="text-warning">
-                    You have potential for Flutter development, but some areas need strengthening. 
-                    Focus on the skill gaps below to improve your readiness.
-                  </p>
-                )}
-                {recommendation.result === 'NO' && (
-                  <p className="text-danger">
-                    Flutter might not be the best fit right now. Consider the alternative paths 
-                    suggested below or work on foundational skills first.
-                  </p>
-                )}
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Is Flutter Right for You?
+              </h1>
+              <p className="text-gray-600 text-sm">
+                Comprehensive Career Assessment & Guidance
+              </p>
             </div>
+            <Badge variant="outline" className="text-sm">
+              100% Complete
+            </Badge>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="mt-4">
+            <Progress value={100} className="h-2" />
+          </div>
+          
+          {/* Section Navigation */}
+          <div className="flex mt-4 space-x-4 overflow-x-auto">
+            {[
+              { id: 'intro', title: 'Introduction', icon: BookOpen, color: 'bg-blue-500' },
+              { id: 'psychometric', title: 'Psychological Fit', icon: Brain, color: 'bg-purple-500' },
+              { id: 'technical', title: 'Technical Aptitude', icon: Code, color: 'bg-green-500' },
+              { id: 'wiscar', title: 'WISCAR Analysis', icon: Target, color: 'bg-orange-500' },
+              { id: 'results', title: 'Your Results', icon: TrendingUp, color: 'bg-red-500' }
+            ].map((section, index) => {
+              const Icon = section.icon;
+              const isActive = section.id === 'results';
+              const isCompleted = true; // All sections are completed when viewing results
+              
+              return (
+                <div
+                  key={section.id}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg min-w-fit ${
+                    isActive
+                      ? 'bg-blue-100 text-blue-700 border-2 border-blue-300'
+                      : isCompleted
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  {isCompleted ? (
+                    <CheckCircle className="w-4 h-4" />
+                  ) : (
+                    <Icon className="w-4 h-4" />
+                  )}
+                  <span className="text-sm font-medium">{section.title}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto space-y-8">
+          {/* Overall Recommendation */}
+          <Card className={`border-2 ${
+            recommendation.color === 'green' ? 'border-green-200 bg-green-50' :
+            recommendation.color === 'orange' ? 'border-orange-200 bg-orange-50' :
+            'border-red-200 bg-red-50'
+          }`}>
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-4">
+                <div className={`p-4 rounded-full ${
+                  recommendation.color === 'green' ? 'bg-green-100' :
+                  recommendation.color === 'orange' ? 'bg-orange-100' :
+                  'bg-red-100'
+                }`}>
+                  <RecommendationIcon className={`w-12 h-12 ${
+                    recommendation.color === 'green' ? 'text-green-600' :
+                    recommendation.color === 'orange' ? 'text-orange-600' :
+                    'text-red-600'
+                  }`} />
+                </div>
+              </div>
+              <CardTitle className="text-3xl font-bold text-gray-900 mb-2">
+                {recommendation.title}
+              </CardTitle>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                {recommendation.description}
+              </p>
+              <Badge 
+                variant="outline" 
+                className={`mt-4 text-lg px-4 py-2 ${
+                  recommendation.color === 'green' ? 'bg-green-100 text-green-800 border-green-300' :
+                  recommendation.color === 'orange' ? 'bg-orange-100 text-orange-800 border-orange-300' :
+                  'bg-red-100 text-red-800 border-red-300'
+                }`}
+              >
+                Recommendation: {recommendation.recommendation}
+              </Badge>
+            </CardHeader>
           </Card>
 
-          {/* Detailed Scores */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <ScoreCard
-              title="Psychological Fit"
-              score={Math.round(scores.psychometric)}
-              icon={Brain}
-              description="Personality & motivation"
-            />
-            <ScoreCard
-              title="Technical Readiness"
-              score={Math.round(scores.technical)}
-              icon={Code}
-              description="Programming aptitude"
-            />
-            <ScoreCard
-              title="WISCAR Score"
-              score={Math.round(Object.values(scores.wiscar).reduce((a, b) => a + b, 0) / 6)}
-              icon={Target}
-              description="Multi-dimensional readiness"
-            />
-            <ScoreCard
-              title="Overall Readiness"
-              score={Math.round(scores.overall)}
-              icon={Award}
-              description="Combined assessment"
-            />
-          </div>
-
-          {/* WISCAR Breakdown */}
-          <Card className="assessment-card">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <Target className="w-5 h-5" />
-              WISCAR Framework Breakdown
-            </h3>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {Object.entries(scores.wiscar).map(([key, value]) => (
-                <div key={key} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium capitalize">{key}</span>
-                    <span className="font-bold">{Math.round(value)}%</span>
+          {/* Score Breakdown */}
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="border-purple-200">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Brain className="w-5 h-5 text-purple-600" />
+                  <span>Psychological Fit</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-2xl font-bold text-purple-600">
+                        {Math.round(scores.psychometric)}%
+                      </span>
+                      <Badge variant={
+                        scores.psychometric >= 75 ? 'default' :
+                        scores.psychometric >= 60 ? 'secondary' : 'destructive'
+                      }>
+                        {scores.psychometric >= 75 ? 'Excellent' :
+                         scores.psychometric >= 60 ? 'Good' : 'Needs Work'}
+                      </Badge>
+                    </div>
+                    <Progress value={scores.psychometric} className="h-3" />
                   </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div 
-                      className="h-2 rounded-full gradient-primary transition-all duration-700"
-                      style={{ width: `${value}%` }}
-                    />
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Interest & Motivation</span>
+                      <span className="font-medium">{Math.round(scores.psychometric * 0.3)}%</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Personality Fit</span>
+                      <span className="font-medium">{Math.round(scores.psychometric * 0.25)}%</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Learning Style</span>
+                      <span className="font-medium">{Math.round(scores.psychometric * 0.25)}%</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Working Approach</span>
+                      <span className="font-medium">{Math.round(scores.psychometric * 0.2)}%</span>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Skill Assessment */}
-          <Card className="assessment-card">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              Skill Gap Analysis
-            </h3>
-            <div className="space-y-4">
-              {skillAssessment.map((skill) => {
-                const status = getSkillStatus(skill.current, skill.required);
-                return (
-                  <div key={skill.skill} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg">{getStatusIcon(status)}</span>
-                      <div>
-                        <div className="font-medium">{skill.skill}</div>
-                        <div className="text-sm text-muted-foreground">
-                          Current: {skill.current}% | Required: {skill.required}%
-                        </div>
-                      </div>
-                    </div>
-                    <Badge 
-                      variant={status === "GOOD" ? "default" : "secondary"}
-                      className={getStatusColor(status)}
-                    >
-                      {status.replace("_", " ")}
-                    </Badge>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-
-          {/* Career Recommendations */}
-          <Card className="assessment-card">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <MapPin className="w-5 h-5" />
-              Recommended Career Paths
-            </h3>
-            <div className="grid gap-4 md:grid-cols-2">
-              {careerPaths.map((career) => (
-                <div key={career.role} className="p-4 bg-muted/30 rounded-lg space-y-3">
-                  <h4 className="font-semibold text-lg">{career.role}</h4>
-                  <p className="text-muted-foreground">{career.description}</p>
+            <Card className="border-green-200">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Code className="w-5 h-5 text-green-600" />
+                  <span>Technical Readiness</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
                   <div>
-                    <div className="text-sm font-medium mb-2">Requirements:</div>
-                    <div className="flex flex-wrap gap-2">
-                      {career.requirements.map((req) => (
-                        <Badge key={req} variant="outline" className="text-xs">
+                    <div className="flex justify-between mb-2">
+                      <span className="text-2xl font-bold text-green-600">
+                        {Math.round(scores.technical)}%
+                      </span>
+                      <Badge variant={
+                        scores.technical >= 75 ? 'default' :
+                        scores.technical >= 60 ? 'secondary' : 'destructive'
+                      }>
+                        {scores.technical >= 75 ? 'Strong' :
+                         scores.technical >= 60 ? 'Moderate' : 'Developing'}
+                      </Badge>
+                    </div>
+                    <Progress value={scores.technical} className="h-3" />
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Questions Answered: 4 / 4
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Logical Reasoning</span>
+                      <span className="font-medium">{Math.round(scores.technical * 0.25)}%</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Programming Concepts</span>
+                      <span className="font-medium">{Math.round(scores.technical * 0.25)}%</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Flutter Fundamentals</span>
+                      <span className="font-medium">{Math.round(scores.technical * 0.25)}%</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Numerical Skills</span>
+                      <span className="font-medium">{Math.round(scores.technical * 0.25)}%</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-orange-200">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Target className="w-5 h-5 text-orange-600" />
+                  <span>WISCAR Analysis</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-2xl font-bold text-orange-600">
+                        {Math.round(Object.values(scores.wiscar).reduce((a, b) => a + b, 0) / 6)}%
+                      </span>
+                      <Badge variant="outline" className="bg-orange-50 text-orange-700">
+                        WISCAR
+                      </Badge>
+                    </div>
+                    <Progress value={Math.round(Object.values(scores.wiscar).reduce((a, b) => a + b, 0) / 6)} className="h-3" />
+                  </div>
+                  <div className="space-y-2">
+                    {Object.entries(scores.wiscar).map(([dimension, score]) => (
+                      <div key={dimension} className="flex justify-between text-sm">
+                        <span className="text-gray-600">{dimension.split(' ')[0]}</span>
+                        <span className="font-medium">{Math.round(score)}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Career Path Matching */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Users className="w-6 h-6 text-blue-600" />
+                <span>Career Path Analysis</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-4">
+                {careerPaths.map((career, index) => (
+                  <div key={index} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold text-gray-900">{career.title}</h4>
+                      <Badge variant="outline" className={
+                        career.skillMatch >= 75 ? 'bg-green-50 text-green-700' :
+                        career.skillMatch >= 60 ? 'bg-orange-50 text-orange-700' :
+                        'bg-red-50 text-red-700'
+                      }>
+                        {career.skillMatch}% Match
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3">{career.description}</p>
+                    <div className="mb-3">
+                      <Progress value={career.skillMatch} className="h-2" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-xs text-gray-500 mb-1">Key Requirements:</div>
+                      {career.requirements.map((req, reqIndex) => (
+                        <Badge key={reqIndex} variant="secondary" className="mr-1 mb-1 text-xs">
                           {req}
                         </Badge>
                       ))}
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </CardContent>
           </Card>
 
-          {/* Learning Path */}
-          <Card className="assessment-card">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <BookOpen className="w-5 h-5" />
-              Your Learning Path
-            </h3>
-            <div className="space-y-6">
-              {[
-                { stage: "Beginner", topics: ["Dart Basics", "Flutter Widgets", "Basic Layouts"], duration: "4-6 weeks" },
-                { stage: "Intermediate", topics: ["Navigation", "State Management", "API Integration"], duration: "6-8 weeks" },
-                { stage: "Advanced", topics: ["Animations", "Performance", "App Deployment"], duration: "8-10 weeks" }
-              ].map((level, index) => (
-                <div key={level.stage} className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
-                      {index + 1}
+          {/* Next Steps */}
+          {recommendation.recommendation === 'YES' && (
+            <Card className="border-green-200">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <BookOpen className="w-6 h-6 text-green-600" />
+                  <span>Your Learning Path</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {learningPath.map((stage, index) => (
+                    <div key={index} className="flex items-start space-x-4 p-4 border rounded-lg">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                          <span className="text-green-700 font-semibold text-sm">{index + 1}</span>
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-semibold text-gray-900">{stage.stage}</h4>
+                          <Badge variant="outline">{stage.duration}</Badge>
+                        </div>
+                        <div className="space-y-1">
+                          {stage.modules.map((module, moduleIndex) => (
+                            <div key={moduleIndex} className="text-sm text-gray-600">
+                              • {module}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                    {index < 2 && <div className="w-0.5 h-16 bg-border mt-2" />}
-                  </div>
-                  <div className="flex-1 pb-8">
-                    <h4 className="font-semibold text-lg">{level.stage}</h4>
-                    <p className="text-sm text-muted-foreground mb-2">{level.duration}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {level.topics.map((topic) => (
-                        <Badge key={topic} variant="secondary">
-                          {topic}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </Card>
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                  <h4 className="font-semibold text-blue-900 mb-2">Recommended Next Steps:</h4>
+                  <ul className="space-y-1 text-sm text-blue-800">
+                    <li>• Install Flutter SDK and set up your development environment</li>
+                    <li>• Complete the Flutter "Get Started" tutorial</li>
+                    <li>• Build your first Flutter app following the official guide</li>
+                    <li>• Join the Flutter community on Discord and Reddit</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Actions */}
-          <div className="flex gap-4 justify-center">
-            <Button variant="outline" onClick={() => navigate('/')}>
-              Take Assessment Again
+          {/* Alternative Recommendations */}
+          {recommendation.recommendation !== 'YES' && (
+            <Card className="border-blue-200">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Star className="w-6 h-6 text-blue-600" />
+                  <span>Alternative Career Paths</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">
+                  Based on your assessment results, here are some alternative technology paths that might be a better fit:
+                </p>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {alternatives.map((alt, index) => (
+                    <div key={index} className="border rounded-lg p-4">
+                      <h4 className="font-semibold text-gray-900 mb-2">{alt.title}</h4>
+                      <p className="text-sm text-gray-600">{alt.reason}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex justify-center space-x-4">
+            <Button 
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={() => navigate('/')}
+            >
+              Retake Assessment
             </Button>
-            <Button variant="primary" onClick={() => window.print()}>
-              Save Results
-            </Button>
+            {recommendation.recommendation === 'YES' && (
+              <Button variant="outline" className="border-green-500 text-green-700 hover:bg-green-50">
+                View Learning Resources
+                <ExternalLink className="ml-2 w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
